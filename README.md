@@ -1,16 +1,8 @@
 # iOS-demo-app
-[![Tuist badge](https://img.shields.io/badge/Powered%20by-Tuist-blueviolet?style=flat-square)](https://tuist.io)
+![Xcode](https://img.shields.io/badge/Xcode-147EFB?style=flat-square&logo=Xcode&logoColor=fff)
 
-## Contents of Implementing
-- [ ] ObjectDetection App
+<!-- ![Xcode](https://img.shields.io/badge/Swift-F05138?style=flat-square&logo=Swift&logoColor=fff) 
+![Xcode](https://img.shields.io/badge/SwiftUI-007FFF?style=flat-square&logo=Swift&logoColor=fff&textColor=000) -->
 
-## Upnext
-- [ ] Question Answering
-- [ ] Segmentation
-
-## Requirements
-- Xcode 14
-- Pytorch
-- CoreML
-- Python 3.9 or above
-- Swift 5 or above
+## Contents
+- [ObjectDetection App](./ObjectDetection/)
