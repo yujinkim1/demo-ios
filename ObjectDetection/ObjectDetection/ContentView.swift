@@ -1,17 +1,24 @@
+//
 //  ContentView.swift
-//  Created by yujinkim on 2023/01/18.
+//  ObjectDetection
+//
+//  Created by yujinkim on 2023/01/20.
+//
 
 import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundColor(.accentColor)
-            Text("Hello, world!")
+        ZStack {
+            HStack {
+                VStack {
+                    HostedViewController()
+                        .ignoresSafeArea()
+                    RoundedRectangle(cornerRadius: 15)
+                        .fill(Color.green)
+                }
+            }
         }
-        .padding()
     }
 }
 

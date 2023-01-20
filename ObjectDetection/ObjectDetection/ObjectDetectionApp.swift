@@ -1,6 +1,5 @@
 //  ObjectDetectionApp.swift
-//  Created by yujinkim on 2023/01/18.
-
+//  Created by yujinkim on 2023/01/20.
 import SwiftUI
 
 @main
