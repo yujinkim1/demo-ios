@@ -10,15 +10,15 @@ import SwiftUI
 struct ContentView: View {
     var body: some View {
         ZStack {
-            HStack {
-                VStack {
-                    HostedViewController()
-                        .ignoresSafeArea()
-                    RoundedRectangle(cornerRadius: 15)
-                        .fill(Color.green)
-                }
+            VStack {
+                HostedViewController()
             }
+            VStack {
+                Text("yolov7")
+            }
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10.0))
         }
+        .ignoresSafeArea()
     }
 }
 
