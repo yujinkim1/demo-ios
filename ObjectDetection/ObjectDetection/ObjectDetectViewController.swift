@@ -6,9 +6,8 @@ import AVFoundation
 import Vision
 import UIKit
 
-class ObjectDetectRecognitionViewController {
-    
-    //MARK: VISION
+class ObjectDetectViewController: ViewController, ObservableObject {
+
     private var requests = [VNRequest]()
     private var detectionOverlay: CALayer! = nil
     private var firstLabel: String = ""
@@ -16,16 +15,16 @@ class ObjectDetectRecognitionViewController {
     
     @discardableResult
     func setupDetector() -> NSError? {
-        
-        guard let mlmodel = Bundle.main.url(forResource: "yolov7safty", withExtension: "mlmodelc") else {
-            return NSError(domain: "ObjectDetectRecognitionViewController", code: -1, userInfo: [NSLocalizedDescriptionKey: "Model file is missing"])
+        //Object Detection 모델의 확장자 정의 및 NSError 캐치
+        guard let mlmodel = Bundle.main.url(forResource: "yolov7tiny", withExtension: "mlmodelc") else {
+            return NSError(domain: "ObjectDetectViewController", code: -1, userInfo: [NSLocalizedDescriptionKey: "Object Detection Model file is missing."])
         }
+        //ML 모델이 성공적으로 로드 되었다면 실행
         do {
             let visionModel = try VNCoreMLModel(for: MLModel(contentsOf: mlmodel))
-            let recognition = VNCoreMLRequest(model: visionModel, completionHandler: detectionDidComplete)
-            
+            let request = VNCoreMLRequest(model: visionModel, completionHandler: detectionDidComplete)
         } catch let error as NSError {
-            print("Model loading went wrong: \(error)")
+            print("Object Detection Model loading went something wrong: \(error)")
         }
     }
     
@@ -49,8 +48,8 @@ class ObjectDetectRecognitionViewController {
             }
             
             //Select only the label with the highest confidence
-            let topLabelObservation = objectObservation.labels[0]
-            let objectBounds = VNImageRectForNormalizedRect(objectObservation.boundingBox, Int(bufferSize.width), Int(bufferSize.height))
+            let topLabelObservation = (observation as AnyObject).labels[0]
+            let objectBounds = VNImageRectForNormalizedRect(observation.boundingBox, Int(bufferSize.width), Int(bufferSize.height))
            
             let shapeLayer = self.createRoundedRectLayerWithBounds(objectBounds)
             
@@ -64,17 +63,20 @@ class ObjectDetectRecognitionViewController {
         CATransaction.commit()
     }
     
-    override func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+    func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+        
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
             return
         }
         
-        let exifOrientation = exifOrientationFromDeviceOrientation()
-        
-        let imageRequestHandler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: exifOrientation, options: [:])
+        let imageRequestHandler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: .right, options: [:])
         do {
-            try imageRequestHandler.perform(self.requests)
-        } catch {
+            try imageRequestHandler.perform([self.coreMLRequest])
+            guard let results = self.VNCoreMLRequest.results as? [VNRecognizedObjectObservation] else { return }
+            for result in results {
+                let label = observation.identifier
+            }
+        } catch let error {
             print(error)
         }
     }
@@ -125,10 +127,13 @@ class ObjectDetectRecognitionViewController {
             CATransaction.commit()
         }
     
+    //MARK: Text Sub Layer 생성 함수
     func createTextSubLayerInBounds(_ bounds: CGRect, identifier: String, confidence: VNConfidence) -> CATextLayer {
         let textLayer = CATextLayer()
-        textLayer.name = "Object Label"
+        textLayer.name = "Object label"
+        //Confidence 지정
         let formattedString = NSMutableAttributedString(string: String(format: "\(identifier)\nConfidence:  %.2f", confidence))
+        //Font setting
         let largeFont = UIFont(name: "Helvetica", size: 24.0)!
         formattedString.addAttributes([NSAttributedString.Key.font: largeFont], range: NSRange(location: 0, length: identifier.count))
         textLayer.string = formattedString
@@ -143,11 +148,12 @@ class ObjectDetectRecognitionViewController {
         return textLayer
     }
     
+    //MARK: 사각형 형태의 CA Layer 생성 함수
     func createRoundedRectLayerWithBounds(_ bounds: CGRect) -> CALayer {
         let shapeLayer = CALayer()
         shapeLayer.bounds = bounds
         shapeLayer.position = CGPoint(x: bounds.midX, y: bounds.midY)
-        shapeLayer.name = "Found Object"
+        shapeLayer.name = "Object"
         shapeLayer.backgroundColor = CGColor(colorSpace: CGColorSpaceCreateDeviceRGB(), components: [1.0, 1.0, 0.2, 0.4])
         shapeLayer.cornerRadius = 7
         return shapeLayer
